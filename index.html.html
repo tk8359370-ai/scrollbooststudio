@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scroll Boost Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<style>
+:root{
+  --ac:#b8ff57;--ac2:#57c8ff;--ac3:#ff6b57;
+  --dk:#080b12;--dk2:#0e1420;--dk3:#141c2e;
+  --gl:rgba(255,255,255,.04);--gb:rgba(255,255,255,.08);
+  --tx:#e8edf5;--mt:rgba(232,237,245,.5);
+  --fd:'Playfair Display',serif;--fu:'DM Sans',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;overflow-x:hidden;}
+body{background:var(--dk);color:var(--tx);font-family:var(--fu);overflow-x:hidden;}
+
+/* CURSOR */
+#cur{width:10px;height:10px;background:var(--ac);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);mix-blend-mode:difference;transition:width .2s,height .2s;}
+#cur.hov{width:18px;height:18px;}
+#ring{width:36px;height:36px;border:1.5px solid rgba(184,255,87,.5);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s;}
+#ring.hov{width:56px;height:56px;border-color:var(--ac);}
+
+/* BG */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;animation:bgs 14s ease-in-out infinite alternate;}
+@keyframes bgs{
+  0%{background:radial-gradient(ellipse 80% 60% at 20% 20%,rgba(87,200,255,.07) 0%,transparent 60%),radial-gradient(ellipse 60% 80% at 80% 80%,rgba(184,255,87,.06) 0%,transparent 60%),#080b12;}
+  50%{background:radial-gradient(ellipse 70% 70% at 70% 20%,rgba(184,255,87,.07) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 20% 70%,rgba(87,200,255,.05) 0%,transparent 60%),#080b12;}
+  100%{background:radial-gradient(ellipse 80% 60% at 80% 40%,rgba(87,200,255,.08) 0%,transparent 60%),radial-gradient(ellipse 60% 70% at 10% 80%,rgba(255,107,87,.05) 0%,transparent 60%),#080b12;}
+}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:1.4rem 5%;background:rgba(8,11,18,.75);backdrop-filter:blur(20px);border-bottom:1px solid var(--gb);transition:padding .4s,background .4s;}
+nav.sc{padding:.85rem 5%;background:rgba(8,11,18,.97);}
+.logo{font-family:var(--fd);font-size:1.15rem;font-weight:700;color:var(--tx);text-decoration:none;}
+.logo span{color:var(--ac);}
+.nl{display:flex;gap:2.5rem;list-style:none;}
+.nl a{color:var(--mt);text-decoration:none;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;transition:color .3s;position:relative;}
+.nl a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--ac);transition:width .3s;}
+.nl a:hover{color:var(--tx);}
+.nl a:hover::after{width:100%;}
+.ncta{padding:.5rem 1.4rem;background:transparent;border:1px solid var(--gb);color:var(--tx);border-radius:100px;font-family:var(--fu);font-size:.82rem;cursor:pointer;transition:all .3s;}
+.ncta:hover{border-color:var(--ac);background:var(--ac);color:var(--dk);}
+.ham{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px;}
+.ham span{width:24px;height:1.5px;background:var(--tx);border-radius:2px;display:block;}
+
+/* MOB NAV */
+.mnav{display:none;position:fixed;inset:0;z-index:490;background:rgba(8,11,18,.98);backdrop-filter:blur(24px);flex-direction:column;align-items:center;justify-content:center;gap:2rem;}
+.mnav.open{display:flex;}
+.mnav a{font-family:var(--fd);font-size:2.3rem;font-weight:700;color:var(--tx);text-decoration:none;transition:color .3s;}
+.mnav a:hover{color:var(--ac);}
+.mclose{position:absolute;top:1.5rem;right:5%;background:none;border:none;cursor:pointer;font-size:1.4rem;color:var(--tx);}
+
+/* HERO */
+#hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8rem 5% 5rem;position:relative;overflow:hidden;}
+.htag{display:inline-flex;align-items:center;gap:.5rem;background:var(--gl);border:1px solid var(--gb);padding:.38rem 1rem;border-radius:100px;font-size:.74rem;letter-spacing:.15em;text-transform:uppercase;color:var(--ac);margin-bottom:1.8rem;}
+.htag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--ac);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.8);}}
+.htitle{font-family:var(--fd);font-size:clamp(3rem,8vw,7rem);line-height:1;font-weight:700;margin-bottom:1.4rem;letter-spacing:-.02em;}
+.htitle .ln{display:block;overflow:hidden;}
+.htitle .wd{display:inline-block;}
+.htitle em{font-style:italic;color:var(--ac);}
+.htitle .hl{-webkit-text-stroke:1.5px var(--tx);color:transparent;}
+.hsub{font-size:1rem;color:var(--mt);max-width:500px;line-height:1.78;margin-bottom:2.8rem;}
+.hbtns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+.bp{padding:.88rem 2.2rem;background:var(--ac);color:var(--dk);border:none;border-radius:100px;font-family:var(--fu);font-size:.9rem;font-weight:500;cursor:pointer;position:relative;overflow:hidden;transition:transform .3s,box-shadow .3s;}
+.bp:hover{transform:translateY(-3px);box-shadow:0 20px 55px rgba(184,255,87,.3);}
+.bs{padding:.88rem 2.2rem;background:transparent;color:var(--tx);border:1px solid var(--gb);border-radius:100px;font-family:var(--fu);font-size:.9rem;cursor:pointer;transition:all .3s;}
+.bs:hover{border-color:var(--tx);background:var(--gl);}
+.rip{position:absolute;border-radius:50%;background:rgba(8,11,18,.22);transform:scale(0);animation:rip .6s linear;pointer-events:none;}
+@keyframes rip{to{transform:scale(4);opacity:0;}}
+.shint{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;color:var(--mt);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;}
+.sline{width:1px;height:48px;background:linear-gradient(to bottom,var(--mt),transparent);animation:sl 2s ease-in-out infinite;}
+@keyframes sl{0%,100%{opacity:1;}50%{opacity:.3;}}
+.tc{animation:blink 1s infinite;}
+@keyframes blink{50%{opacity:0;}}
+.gd{position:absolute;border-radius:50%;pointer-events:none;}
+
+/* MARQUEE */
+.mqs{padding:2.2rem 0;overflow:hidden;border-top:1px solid var(--gb);border-bottom:1px solid var(--gb);}
+.mqt{display:flex;gap:3rem;animation:mq 22s linear infinite;width:max-content;}
+@keyframes mq{to{transform:translateX(-50%);}}
+.mqi{display:flex;align-items:center;gap:.8rem;font-size:.77rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mt);white-space:nowrap;}
+.mqd{width:4px;height:4px;border-radius:50%;background:var(--ac);flex-shrink:0;}
+
+/* SHARED */
+section{position:relative;z-index:1;}
+.con{max-width:1200px;margin:0 auto;padding:0 5%;}
+.stag{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ac);display:block;margin-bottom:.7rem;}
+.stitle{font-family:var(--fd);font-size:clamp(1.9rem,4vw,3rem);font-weight:700;line-height:1.1;}
+.stitle em{font-style:italic;color:var(--ac);}
+.shd{margin-bottom:3.5rem;}
+
+/* STATS */
+#stats{padding:6rem 0;}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:2px;background:var(--gb);border:1px solid var(--gb);border-radius:20px;overflow:hidden;}
+.sc2{background:var(--dk2);padding:2.8rem 1.5rem;display:flex;flex-direction:column;align-items:center;text-align:center;gap:.4rem;transition:background .3s;position:relative;overflow:hidden;}
+.sc2::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--ac),transparent);transform:scaleX(0);transition:transform .5s;}
+.sc2:hover{background:var(--dk3);}
+.sc2:hover::before{transform:scaleX(1);}
+.snum{font-family:var(--fd);font-size:3.2rem;font-weight:700;line-height:1;}
+.snum .a{color:var(--ac);}
+.slbl{font-size:.74rem;color:var(--mt);letter-spacing:.1em;text-transform:uppercase;}
+
+/* SERVICES */
+#services{padding:6rem 0;}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5px;background:var(--gb);border:1px solid var(--gb);border-radius:24px;overflow:hidden;}
+.vc{background:var(--dk2);padding:2.4rem;transition:background .4s;position:relative;overflow:hidden;cursor:default;}
+.vc::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 0% 0%,rgba(184,255,87,.06) 0%,transparent 60%);opacity:0;transition:opacity .5s;}
+.vc:hover{background:var(--dk3);}
+.vc:hover::after{opacity:1;}
+.vi{width:50px;height:50px;background:var(--gl);border:1px solid var(--gb);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;color:var(--ac);margin-bottom:1.3rem;transition:background .3s,border-color .3s;}
+.vc:hover .vi{background:rgba(184,255,87,.1);border-color:var(--ac);}
+.vt{font-family:var(--fd);font-size:1.22rem;font-weight:700;margin-bottom:.65rem;line-height:1.2;}
+.vd{font-size:.86rem;color:var(--mt);line-height:1.72;}
+.vtags{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:1.2rem;}
+.vtag{font-size:.67rem;letter-spacing:.07em;text-transform:uppercase;padding:.27rem .7rem;border-radius:100px;background:var(--gl);border:1px solid var(--gb);color:var(--mt);}
+
+/* TEAM */
+#team{padding:6rem 0;}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1.5rem;}
+.tcard{background:var(--gl);border:1px solid var(--gb);border-radius:22px;overflow:hidden;transition:transform .4s,border-color .4s,box-shadow .4s;cursor:default;backdrop-filter:blur(10px);}
+.tcard:hover{transform:translateY(-10px);border-color:rgba(184,255,87,.3);box-shadow:0 28px 70px rgba(0,0,0,.45),0 0 0 1px rgba(184,255,87,.1);}
+.ttop{height:190px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.tph{width:110px;height:110px;border-radius:50%;overflow:hidden;border:3px solid rgba(255,255,255,.15);box-shadow:0 8px 30px rgba(0,0,0,.5);position:relative;z-index:1;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:1.9rem;font-weight:700;}
+.tph img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block;}
+.tbody{padding:1.4rem;}
+.tname{font-family:var(--fd);font-size:1.08rem;font-weight:700;margin-bottom:.2rem;}
+.trole{font-size:.68rem;color:var(--ac);letter-spacing:.09em;text-transform:uppercase;margin-bottom:1.1rem;line-height:1.5;}
+.skls{display:flex;flex-direction:column;gap:.7rem;}
+.skl{font-size:.69rem;color:var(--mt);display:flex;justify-content:space-between;margin-bottom:.28rem;}
+.skb{height:3px;background:var(--gb);border-radius:100px;overflow:hidden;}
+.skf{height:100%;border-radius:100px;width:0%;transition:width 1.3s cubic-bezier(.4,0,.2,1);}
+/* glows */
+.g1{background:radial-gradient(ellipse at center,rgba(14,107,107,.35) 0%,transparent 70%);}
+.g2{background:radial-gradient(ellipse at center,rgba(107,14,107,.35) 0%,transparent 70%);}
+.g3{background:radial-gradient(ellipse at center,rgba(107,75,14,.35) 0%,transparent 70%);}
+.g4{background:radial-gradient(ellipse at center,rgba(14,107,42,.35) 0%,transparent 70%);}
+.g5{background:radial-gradient(ellipse at center,rgba(107,14,42,.35) 0%,transparent 70%);}
+/* avatar bg */
+.a1{background:linear-gradient(135deg,#1a2a3a,#0e6b6b);}
+.a2{background:linear-gradient(135deg,#2a1a3a,#6b0e6b);}
+.a3{background:linear-gradient(135deg,#3a2a1a,#6b4b0e);}
+.a4{background:linear-gradient(135deg,#1a3a1a,#0e6b2a);}
+.a5{background:linear-gradient(135deg,#3a1a1a,#6b0e2a);}
+/* skill fills */
+.f1{background:linear-gradient(to right,#0e6b6b,var(--ac2));}
+.f2{background:linear-gradient(to right,#6b0e6b,#c857ff);}
+.f3{background:linear-gradient(to right,#6b4b0e,#ffb357);}
+.f4{background:linear-gradient(to right,#0e6b2a,var(--ac));}
+.f5{background:linear-gradient(to right,#6b0e2a,var(--ac3));}
+
+/* ABOUT */
+#about{padding:6rem 0;overflow:hidden;}
+.agrid{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;}
+.avis{position:relative;height:480px;}
+.abox{position:absolute;background:var(--gl);border:1px solid var(--gb);border-radius:18px;backdrop-filter:blur(10px);padding:1.5rem;display:flex;align-items:center;gap:.9rem;}
+.ab1{top:0;left:0;right:4rem;}
+.ab2{top:50%;left:3rem;right:0;transform:translateY(-50%);}
+.ab3{bottom:0;left:1rem;right:3rem;}
+.abi{width:44px;height:44px;flex-shrink:0;border-radius:11px;background:var(--gl);border:1px solid var(--gb);display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.abt h4{font-size:.93rem;font-weight:500;margin-bottom:.2rem;}
+.abt p{font-size:.74rem;color:var(--mt);}
+.atxt h2{font-family:var(--fd);font-size:clamp(1.7rem,3vw,2.7rem);font-weight:700;line-height:1.2;margin-bottom:1.3rem;}
+.atxt h2 em{font-style:italic;color:var(--ac);}
+.atxt p{color:var(--mt);line-height:1.82;margin-bottom:1.3rem;font-size:.92rem;}
+
+/* PROCESS */
+#process{padding:6rem 0;}
+.plist{display:flex;flex-direction:column;}
+.pi{display:grid;grid-template-columns:72px 1fr;gap:2rem;padding:2.2rem 0;border-bottom:1px solid var(--gb);transition:all .4s;cursor:default;}
+.pi:hover .pn,.pi:hover .ptit{color:var(--ac);}
+.pn{font-family:var(--fd);font-size:2.8rem;font-weight:700;color:var(--gb);line-height:1;align-self:start;transition:color .4s;}
+.ptit{font-size:1.12rem;font-weight:500;margin-bottom:.42rem;transition:color .4s;}
+.pdesc{font-size:.86rem;color:var(--mt);line-height:1.7;}
+
+/* FOOTER */
+footer{padding:5rem 0 2.5rem;border-top:1px solid var(--gb);position:relative;z-index:1;}
+.fgrid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3.5rem;margin-bottom:3.5rem;}
+.fbr h3{font-family:var(--fd);font-size:1.4rem;font-weight:700;margin-bottom:.9rem;}
+.fbr h3 span{color:var(--ac);}
+.fbr p{font-size:.85rem;color:var(--mt);line-height:1.72;max-width:265px;}
+.socs{display:flex;gap:.7rem;margin-top:1.3rem;}
+.soc{width:38px;height:38px;background:var(--gl);border:1px solid var(--gb);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--mt);font-size:.87rem;text-decoration:none;transition:all .3s;}
+.soc:hover{background:var(--ac);color:var(--dk);border-color:var(--ac);}
+.fc h4{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--mt);margin-bottom:1.1rem;}
+.fc ul{list-style:none;display:flex;flex-direction:column;gap:.62rem;}
+.fc a{color:var(--mt);text-decoration:none;font-size:.85rem;transition:color .3s;}
+.fc a:hover{color:var(--tx);}
+.fbot{display:flex;justify-content:space-between;align-items:center;padding-top:1.8rem;border-top:1px solid var(--gb);font-size:.75rem;color:var(--mt);}
+
+/* REVEAL */
+.rv{opacity:0;transform:translateY(38px);}
+.rvl{opacity:0;transform:translateX(-38px);}
+.rvr{opacity:0;transform:translateX(38px);}
+
+/* modal css removed */
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .nl{display:none;}
+  .ham{display:flex;}
+  .agrid{grid-template-columns:1fr;}
+  .avis{height:280px;margin-bottom:3rem;}
+  .fgrid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:600px){
+  .fgrid{grid-template-columns:1fr;gap:2rem;}
+  .htitle{font-size:2.6rem;}
+  .snum{font-size:2.6rem;}
+  .vgrid{grid-template-columns:1fr;}
+  .pi{grid-template-columns:50px 1fr;gap:1rem;}
+  .pn{font-size:2rem;}
+  .crow{grid-template-columns:1fr;}
+  .cmopts{grid-template-columns:1fr;}
+  .cmhd,.cmopts,.cmdiv,.cmform{padding-left:1.4rem;padding-right:1.4rem;}
+}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="ring"></div>
+<div class="bg"></div>
+
+<!-- MOBILE NAV -->
+<div class="mnav" id="mnav">
+  <button class="mclose" id="mclose"><i class="fas fa-times"></i></button>
+  <a href="#hero"     onclick="closeMob()">Home</a>
+  <a href="#services" onclick="closeMob()">Services</a>
+  <a href="#team"     onclick="closeMob()">Team</a>
+  <a href="#about"    onclick="closeMob()">About</a>
+  <a href="#process"  onclick="closeMob()">Process</a>
+</div>
+
+<!-- NAV -->
+<nav id="nb">
+  <a href="#hero" class="logo">Scroll<span>Boost</span> Studio</a>
+  <ul class="nl">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#team">Team</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#process">Process</a></li>
+  </ul>
+  <button class="ncta" id="talkBtn">Let's Talk</button>
+  <button class="ham" id="hamBtn"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="gd" style="width:500px;height:500px;background:rgba(184,255,87,.05);top:-120px;right:-80px;filter:blur(80px);z-index:0;"></div>
+  <div class="gd" style="width:400px;height:400px;background:rgba(87,200,255,.05);bottom:0;left:-100px;filter:blur(80px);z-index:0;"></div>
+  <div class="htag">AI-Powered Creative Studio — Est. 2020</div>
+  <h1 class="htitle">
+    <span class="ln"><span class="wd">We</span> <span class="wd">Craft</span></span>
+    <span class="ln"><em class="wd">Digital</em> <span class="wd hl">Magic</span></span>
+    <span class="ln" style="font-size:.68em;font-style:italic;color:var(--mt);">for <span id="typed" style="color:var(--ac2)"></span><span class="tc" style="color:var(--ac2)">|</span></span>
+  </h1>
+  <p class="hsub">Five AI-powered creatives transforming bold ideas into extraordinary digital experiences that captivate, convert, and scale.</p>
+  <div class="hbtns">
+    <button class="bp" id="heroTalk">Let's Work Together</button>
+    <button class="bs" onclick="document.getElementById('team').scrollIntoView({behavior:'smooth'})">Meet the Team</button>
+  </div>
+  <div class="shint"><span>Scroll</span><div class="sline"></div></div>
+</section>
+
+<!-- MARQUEE -->
+<div class="mqs">
+  <div class="mqt">
+    <span class="mqi"><span class="mqd"></span>AI Video Production</span>
+    <span class="mqi"><span class="mqd"></span>Meta Ads</span>
+    <span class="mqi"><span class="mqd"></span>TikTok Ads</span>
+    <span class="mqi"><span class="mqd"></span>Motion Graphics</span>
+    <span class="mqi"><span class="mqd"></span>Ecommerce Marketing</span>
+    <span class="mqi"><span class="mqd"></span>Direct Response Scripts</span>
+    <span class="mqi"><span class="mqd"></span>AI Creative Strategy</span>
+    <span class="mqi"><span class="mqd"></span>Performance Creatives</span>
+    <span class="mqi"><span class="mqd"></span>AI Video Production</span>
+    <span class="mqi"><span class="mqd"></span>Meta Ads</span>
+    <span class="mqi"><span class="mqd"></span>TikTok Ads</span>
+    <span class="mqi"><span class="mqd"></span>Motion Graphics</span>
+    <span class="mqi"><span class="mqd"></span>Ecommerce Marketing</span>
+    <span class="mqi"><span class="mqd"></span>Direct Response Scripts</span>
+    <span class="mqi"><span class="mqd"></span>AI Creative Strategy</span>
+    <span class="mqi"><span class="mqd"></span>Performance Creatives</span>
+  </div>
+</div>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="con">
+    <div class="sgrid">
+      <div class="sc2 rv"><div class="snum"><span class="ctr" data-t="147">0</span><span class="a">+</span></div><div class="slbl">Projects Done</div></div>
+      <div class="sc2 rv"><div class="snum"><span class="ctr" data-t="89">0</span><span class="a">+</span></div><div class="slbl">Happy Clients</div></div>
+      <div class="sc2 rv"><div class="snum"><span class="ctr" data-t="5">0</span></div><div class="slbl">Core Members</div></div>
+      <div class="sc2 rv"><div class="snum"><span class="ctr" data-t="4">0</span><span class="a">+</span></div><div class="slbl">Years Active</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="con">
+    <div class="shd rv"><span class="stag">What We Do</span><h2 class="stitle">Our <em>Services</em></h2></div>
+    <div class="vgrid">
+      <div class="vc rv"><div class="vi"><i class="fas fa-robot"></i></div><h3 class="vt">AI Video Production</h3><p class="vd">Cutting-edge AI-powered video creation using Runway, Pika, Kling & more — scroll-stopping content produced at speed and scale.</p><div class="vtags"><span class="vtag">Runway</span><span class="vtag">Kling</span><span class="vtag">Pika</span></div></div>
+      <div class="vc rv"><div class="vi"><i class="fas fa-bullseye"></i></div><h3 class="vt">Performance Ad Creatives</h3><p class="vd">High-converting Meta & TikTok ad creatives engineered for ROI — data-driven strategy with visuals that stop the scroll and drive purchases.</p><div class="vtags"><span class="vtag">Meta Ads</span><span class="vtag">TikTok Ads</span><span class="vtag">UGC</span></div></div>
+      <div class="vc rv"><div class="vi"><i class="fas fa-film"></i></div><h3 class="vt">Motion Graphics & Editing</h3><p class="vd">Professional post-production with After Effects, Premiere Pro & CapCut — motion-rich content that elevates brands across social and ads.</p><div class="vtags"><span class="vtag">After Effects</span><span class="vtag">Premiere Pro</span><span class="vtag">CapCut</span></div></div>
+      <div class="vc rv"><div class="vi"><i class="fas fa-store"></i></div><h3 class="vt">Ecommerce Marketing</h3><p class="vd">Full-funnel ecommerce growth — store management, product ads, audience targeting, and creative strategy built to maximize ROAS.</p><div class="vtags"><span class="vtag">Store Handling</span><span class="vtag">ROAS Scaling</span><span class="vtag">Targeting</span></div></div>
+      <div class="vc rv"><div class="vi"><i class="fas fa-pen-fancy"></i></div><h3 class="vt">Direct Response Scripting</h3><p class="vd">Hook-to-hold scripts built for retention. Avatar-mapped messaging, silent-sell formats, and text-first frameworks that convert viewers into buyers.</p><div class="vtags"><span class="vtag">VSL Scripts</span><span class="vtag">Ad Hooks</span><span class="vtag">Silent Sell</span></div></div>
+      <div class="vc rv"><div class="vi"><i class="fas fa-brain"></i></div><h3 class="vt">AI Creative Strategy</h3><p class="vd">ElevenLabs, HeyGen, Higgsfield — we combine cutting-edge AI tools with strategic thinking to produce campaigns faster and smarter than any traditional agency.</p><div class="vtags"><span class="vtag">ElevenLabs</span><span class="vtag">HeyGen</span><span class="vtag">Higgsfield</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team">
+  <div class="con">
+    <div class="shd rv"><span class="stag">The Crew</span><h2 class="stitle">Meet the <em>Visionaries</em></h2></div>
+    <div class="tgrid">
+
+      <!-- Tanveer Khan -->
+      <div class="tcard rv">
+        <div class="ttop g1">
+          <div class="tph">
+            <img src="https://i.postimg.cc/9ffTkP86/Untitled-design-(1).png" alt="Tanveer Khan" onerror="this.style.display='none';this.parentElement.classList.add('a1');this.parentElement.innerHTML='TK';">
+          </div>
+        </div>
+        <div class="tbody">
+          <div class="tname">Tanveer Khan</div>
+          <div class="trole">AI Creative Producer</div>
+          <div class="skls">
+            <div><div class="skl"><span>AI Video Generation</span><span>95%</span></div><div class="skb"><div class="skf f1" data-w="95"></div></div></div>
+            <div><div class="skl"><span>Ecommerce Marketing</span><span>92%</span></div><div class="skb"><div class="skf f1" data-w="92"></div></div></div>
+            <div><div class="skl"><span>Expert Video Editing</span><span>96%</span></div><div class="skb"><div class="skf f1" data-w="96"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ibrar Khan -->
+      <div class="tcard rv">
+        <div class="ttop g2">
+          <div class="tph">
+            <img src="https://i.postimg.cc/rwjxgZJ5/Untitled-design.png" alt="Ibrar Khan" onerror="this.style.display='none';this.parentElement.classList.add('a2');this.parentElement.innerHTML='IK';">
+          </div>
+        </div>
+        <div class="tbody">
+          <div class="tname">Ibrar Khan</div>
+          <div class="trole">AI Digital Marketing & Video Creative Lead</div>
+          <div class="skls">
+            <div><div class="skl"><span>Performance Creative</span><span>94%</span></div><div class="skb"><div class="skf f2" data-w="94"></div></div></div>
+            <div><div class="skl"><span>AI Digital Marketing</span><span>91%</span></div><div class="skb"><div class="skf f2" data-w="91"></div></div></div>
+            <div><div class="skl"><span>Lead Creative Strategy</span><span>93%</span></div><div class="skb"><div class="skf f2" data-w="93"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Awais Soomro -->
+      <div class="tcard rv">
+        <div class="ttop g3">
+          <div class="tph a3">AS</div>
+        </div>
+        <div class="tbody">
+          <div class="tname">Awais Soomro</div>
+          <div class="trole">AI Post-Production & Motion Graphics Specialist</div>
+          <div class="skls">
+            <div><div class="skl"><span>AE · Premiere · CapCut</span><span>96%</span></div><div class="skb"><div class="skf f3" data-w="96"></div></div></div>
+            <div><div class="skl"><span>Runway · Pika · Kling</span><span>90%</span></div><div class="skb"><div class="skf f3" data-w="90"></div></div></div>
+            <div><div class="skl"><span>AI Narrative Engineer</span><span>88%</span></div><div class="skb"><div class="skf f3" data-w="88"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attaullah Marri -->
+      <div class="tcard rv">
+        <div class="ttop g4">
+          <div class="tph a4">AM</div>
+        </div>
+        <div class="tbody">
+          <div class="tname">Attaullah Marri</div>
+          <div class="trole">Meta & TikTok Ads Specialist</div>
+          <div class="skls">
+            <div><div class="skl"><span>Ecommerce Store Handling</span><span>93%</span></div><div class="skb"><div class="skf f4" data-w="93"></div></div></div>
+            <div><div class="skl"><span>Meta & TikTok Ads</span><span>96%</span></div><div class="skb"><div class="skf f4" data-w="96"></div></div></div>
+            <div><div class="skl"><span>Audience Targeting</span><span>94%</span></div><div class="skb"><div class="skf f4" data-w="94"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Javed Marri -->
+      <div class="tcard rv">
+        <div class="ttop g5">
+          <div class="tph a5">JM</div>
+        </div>
+        <div class="tbody">
+          <div class="tname">Javed Marri</div>
+          <div class="trole">Direct & Indirect Response Scriptwriter</div>
+          <div class="skls">
+            <div><div class="skl"><span>Hook-to-Hold Ratio</span><span>95%</span></div><div class="skb"><div class="skf f5" data-w="95"></div></div></div>
+            <div><div class="skl"><span>Avatar-to-Offer Mapping</span><span>92%</span></div><div class="skb"><div class="skf f5" data-w="92"></div></div></div>
+            <div><div class="skl"><span>Silent Sell Scripting</span><span>90%</span></div><div class="skb"><div class="skf f5" data-w="90"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="con">
+    <div class="agrid">
+      <div class="avis rvl">
+        <div class="gd" style="width:270px;height:270px;background:rgba(184,255,87,.06);top:50%;left:50%;transform:translate(-50%,-50%);filter:blur(60px);z-index:0;"></div>
+        <div class="abox ab1" data-px="0.3">
+          <div class="abi" style="color:var(--ac2)"><i class="fas fa-robot"></i></div>
+          <div class="abt"><h4>AI-First Agency</h4><p>We use the latest AI tools to deliver faster, smarter, and more impactful creative work.</p></div>
+        </div>
+        <div class="abox ab2" data-px="-0.2">
+          <div class="abi" style="color:var(--ac)"><i class="fas fa-chart-line"></i></div>
+          <div class="abt"><h4>Results Driven</h4><p>Every creative decision is backed by performance data and conversion strategy.</p></div>
+        </div>
+        <div class="abox ab3" data-px="0.15">
+          <div class="abi" style="color:var(--ac3)"><i class="fas fa-globe"></i></div>
+          <div class="abt"><h4>Global Clients</h4><p>Serving ecommerce brands and founders across 20+ countries worldwide.</p></div>
+        </div>
+      </div>
+      <div class="atxt rvr">
+        <span class="stag">Our Story</span>
+        <h2>We don't do <em>ordinary.</em><br>Never have.</h2>
+        <p>Scroll Boost Studio was built by five specialists who believe that AI + creativity is the most powerful combination in modern marketing. We left the traditional agency world behind to build something faster, sharper, and more results-focused.</p>
+        <p>Every project gets the full force of our collective expertise — from the first hook to the final edit. We obsess over the details so our clients can obsess over their growth.</p>
+        <button class="bp" id="aboutTalk" style="margin-top:.5rem">Start a Project <i class="fas fa-arrow-right" style="margin-left:.4rem"></i></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+  <div class="con">
+    <div class="shd rv"><span class="stag">How We Work</span><h2 class="stitle">Our <em>Process</em></h2></div>
+    <div class="plist">
+      <div class="pi rv"><div class="pn">01</div><div><div class="ptit">Discover & Define</div><p class="pdesc">Deep-dive strategy sessions to understand your brand, audience, and goals before we create a single frame.</p></div></div>
+      <div class="pi rv"><div class="pn">02</div><div><div class="ptit">Concept & Script</div><p class="pdesc">Hook-first ideation — we write scripts and creative concepts engineered to capture attention and hold it.</p></div></div>
+      <div class="pi rv"><div class="pn">03</div><div><div class="ptit">Produce & Animate</div><p class="pdesc">AI tools + expert editing bring the vision to life. Every transition, every beat, every frame is considered.</p></div></div>
+      <div class="pi rv"><div class="pn">04</div><div><div class="ptit">Launch & Scale</div><p class="pdesc">We deploy, measure, and optimize. Your ROAS goes up, your cost-per-result goes down. That's the mission.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="con">
+    <div class="fgrid">
+      <div class="fbr">
+        <h3>Scroll<span>Boost</span> Studio</h3>
+        <p>An AI-powered creative collective building digital content that turns heads, opens wallets, and scales brands.</p>
+        <div class="socs">
+          <a class="soc" href="#"><i class="fab fa-instagram"></i></a>
+          <a class="soc" href="#"><i class="fab fa-tiktok"></i></a>
+          <a class="soc" href="https://wa.me/923140135393" target="_blank"><i class="fab fa-whatsapp"></i></a>
+          <a class="soc" href="#"><i class="fab fa-youtube"></i></a>
+          <a class="soc" href="#"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+      </div>
+      <div class="fc">
+        <h4>Services</h4>
+        <ul>
+          <li><a href="#">AI Video Production</a></li>
+          <li><a href="#">Performance Ad Creatives</a></li>
+          <li><a href="#">Motion Graphics</a></li>
+          <li><a href="#">Ecommerce Marketing</a></li>
+          <li><a href="#">Direct Response Scripts</a></li>
+        </ul>
+      </div>
+      <div class="fc">
+        <h4>Studio</h4>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Our Work</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Careers — Karachi</a></li>
+          <li><a href="#">Press Kit</a></li>
+        </ul>
+      </div>
+      <div class="fc">
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="mailto:scrollbooststudio@gmail.com">scrollbooststudio@gmail.com</a></li>
+          <li><a href="tel:+923140135393">+92 314 0135393</a></li>
+          <li><a href="#">Karachi, Pakistan</a></li>
+          <li><a href="#">Islamabad, Pakistan</a></li>
+          <li><a href="https://wa.me/923140135393?text=Hi%20Scroll%20Boost%20Studio!%20I%20want%20to%20start%20a%20project." target="_blank">Start a Project</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fbot">
+      <span>© 2024 Scroll Boost Studio. All rights reserved.</span>
+      <span>Crafted with <i class="fas fa-heart" style="color:var(--ac3)"></i> in Pakistan</span>
+    </div>
+  </div>
+</footer>
+
+
+
+<script>
+/* ======= CURSOR ======= */
+const cur=document.getElementById('cur'),ring=document.getElementById('ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  cur.style.left=mx+'px';cur.style.top=my+'px';
+});
+(function loop(){
+  rx+=(mx-rx)*.13;ry+=(my-ry)*.13;
+  ring.style.left=rx+'px';ring.style.top=ry+'px';
+  requestAnimationFrame(loop);
+})();
+document.querySelectorAll('a,button,.tcard,.vc,.pi,.sc2').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.classList.add('hov');ring.classList.add('hov');});
+  el.addEventListener('mouseleave',()=>{cur.classList.remove('hov');ring.classList.remove('hov');});
+});
+
+/* ======= NAV ======= */
+window.addEventListener('scroll',()=>document.getElementById('nb').classList.toggle('sc',scrollY>60));
+document.getElementById('hamBtn').addEventListener('click',()=>document.getElementById('mnav').classList.add('open'));
+document.getElementById('mclose').addEventListener('click',closeMob);
+function closeMob(){document.getElementById('mnav').classList.remove('open');}
+
+/* ======= TYPED ======= */
+const words=['Ecommerce Brands.','Bold Founders.','Growing Startups.','Big Visions.'];
+let wi=0,ci=0,del=false;
+const tel=document.getElementById('typed');
+function typeIt(){
+  const w=words[wi];
+  tel.textContent=del?w.slice(0,ci--):w.slice(0,ci++);
+  if(!del&&ci>w.length){del=true;setTimeout(typeIt,1600);return;}
+  if(del&&ci<0){del=false;wi=(wi+1)%words.length;ci=0;setTimeout(typeIt,350);return;}
+  setTimeout(typeIt,del?55:85);
+}
+typeIt();
+
+/* ======= RIPPLE ======= */
+function addRip(e,btn){
+  const r=document.createElement('span');r.className='rip';
+  const rc=btn.getBoundingClientRect(),sz=Math.max(rc.width,rc.height)*2;
+  r.style.cssText=`width:${sz}px;height:${sz}px;left:${e.clientX-rc.left-sz/2}px;top:${e.clientY-rc.top-sz/2}px`;
+  btn.appendChild(r);setTimeout(()=>r.remove(),650);
+}
+document.querySelectorAll('.bp,.bs,.ncta').forEach(b=>b.addEventListener('click',e=>addRip(e,b)));
+
+/* ======= GSAP ======= */
+gsap.registerPlugin(ScrollTrigger);
+gsap.utils.toArray('.rv').forEach(el=>gsap.to(el,{opacity:1,y:0,duration:.9,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 86%',toggleActions:'play none none none'}}));
+gsap.utils.toArray('.rvl').forEach(el=>gsap.to(el,{opacity:1,x:0,duration:1,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 82%'}}));
+gsap.utils.toArray('.rvr').forEach(el=>gsap.to(el,{opacity:1,x:0,duration:1,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 82%'}}));
+gsap.from('.htitle .wd',{opacity:0,y:55,duration:1,stagger:.12,ease:'power4.out',delay:.3});
+gsap.from('.htag',{opacity:0,y:-20,duration:.8,delay:.1});
+gsap.from('.hsub',{opacity:0,y:28,duration:.9,delay:.85});
+gsap.from('.hbtns',{opacity:0,y:20,duration:.8,delay:1.1});
+gsap.from('.shint',{opacity:0,duration:1,delay:1.8});
+
+/* ======= COUNTERS ======= */
+const cObs=new IntersectionObserver(entries=>{
+  entries.forEach(en=>{
+    if(!en.isIntersecting)return;
+    const el=en.target,t=+el.dataset.t;let c=0;
+    const st=Math.ceil(t/60);
+    const tm=setInterval(()=>{c=Math.min(c+st,t);el.textContent=c;if(c>=t)clearInterval(tm);},25);
+    cObs.unobserve(el);
+  });
+},{threshold:.5});
+document.querySelectorAll('.ctr').forEach(el=>cObs.observe(el));
+
+/* ======= SKILL BARS ======= */
+const skObs=new IntersectionObserver(entries=>{
+  entries.forEach(en=>{
+    if(!en.isIntersecting)return;
+    en.target.querySelectorAll('.skf').forEach(b=>b.style.width=b.dataset.w+'%');
+    skObs.unobserve(en.target);
+  });
+},{threshold:.3});
+document.querySelectorAll('.tcard').forEach(c=>skObs.observe(c));
+
+/* ======= PARALLAX ======= */
+window.addEventListener('scroll',()=>{
+  const sy=scrollY;
+  document.querySelectorAll('[data-px]').forEach(el=>el.style.transform=`translateY(${sy*parseFloat(el.dataset.px)*.07}px)`);
+});
+
+/* ======= WHATSAPP REDIRECT ======= */
+const WA_LINK = "https://wa.me/923140135393?text=Hi%20Scroll%20Boost%20Studio!%20I%20found%20your%20website%20and%20I%27m%20interested%20in%20working%20together.";
+function openCM(){ window.open(WA_LINK, '_blank'); }
+
+/* Let's Talk wiring */
+document.getElementById('talkBtn').addEventListener('click', openCM);
+document.getElementById('heroTalk').addEventListener('click', openCM);
+document.getElementById('aboutTalk').addEventListener('click', openCM);
+</script>
+</body>
+</html>
